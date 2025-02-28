@@ -30,13 +30,13 @@ const HomeScreen = () => {
           horizontal={true}
           ItemSeparatorComponent={() => {
             return (
-                <View
-                    style={{
-                        height: "100%",
-                        width: 10,
-                    }} />
+              <View
+                style={{
+                  height: "100%",
+                  width: 10,
+                }} />
             );
-        }}
+          }}
         />
       </View>
     </View>
