@@ -17,7 +17,7 @@ const Likes = () => {
   }, []);
 
   return (
-    <View style={tw`flex-1 bg-[#191327] pt-12`}>
+    <View style={tw`flex-1 bg-[#191327] pt-12 h-full`}>
       <Text style={tw`text-center text-white text-2xl mb-4`}>Your Likes 💟</Text>
       <View style={tw`p-4`}>
         <FlatList
