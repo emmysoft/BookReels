@@ -1,0 +1,1 @@
+export const baseUrl = "https://potterapi-fedeperin.vercel.app/en";
