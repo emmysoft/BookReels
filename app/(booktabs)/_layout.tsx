@@ -24,7 +24,9 @@ export default function TabLayout() {
             // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
-          default: {},
+          default: {
+            backgroundColor: '#2a213f'
+          },
         }),
       }}>
       <Tabs.Screen
@@ -38,7 +40,14 @@ export default function TabLayout() {
         name="likes"
         options={{
           title: 'Likes',
-          tabBarIcon: ({ color }) => <Ionicons size={28} name="heart" color={color} />,
+          tabBarIcon: ({ focused }) => <Ionicons size={28} name="heart" color={focused ? "#ff0000" : "#fff"} />,
+        }}
+      />
+      <Tabs.Screen
+        name="characters"
+        options={{
+          title: 'Actors',
+          tabBarIcon: ({ focused }) => <Ionicons size={28} name="person-outline" color={focused ? "#0000ff" : "#fff"} />,
         }}
       />
     </Tabs>
