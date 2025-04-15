@@ -1,5 +1,5 @@
-import { View, Text, FlatList, Image } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, FlatList, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import bookService from '@/services/books';
 import tw from 'twrnc';
 

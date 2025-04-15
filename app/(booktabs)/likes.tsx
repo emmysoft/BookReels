@@ -3,7 +3,6 @@ import React, { useCallback, useState } from 'react';
 import tw from 'twrnc';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-import { router } from 'expo-router';
 
 const Likes = () => {
 
@@ -63,7 +62,7 @@ const Likes = () => {
             data={likedBooks}
             keyExtractor={(item) => item?.title}
             renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => router.push("/characters/index")} style={tw`mb-6 p-4 bg-[#2a213f] rounded-xl`}>
+              <TouchableOpacity style={tw`mb-6 p-4 bg-[#2a213f] rounded-xl`}>
                 <Image
                   source={{ uri: item?.cover }}
                   style={tw`w-full h-52 rounded-lg mb-3`}

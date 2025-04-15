@@ -6,7 +6,7 @@ class BookService {
     }
 
     getCharacters = async () => {
-        return await apiClient.get('/characters')
+        return await apiClient.get(`/characters`)
     }
 }
 

@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, Pressable } from 'react-native'
+import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, Pressable, TextInput } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import tw from 'twrnc';
 import bookService from '@/services/books';
@@ -12,6 +12,9 @@ const HomeScreen = () => {
 
   //state for book data
   const [books, setBooks] = useState<any[]>([]);
+
+  //state for search books and actors
+  const [search, setSearch] = useState("");
 
   //like state
   const [likedBooks, setLikedBooks] = useState<any[]>([]);
@@ -91,6 +94,12 @@ const HomeScreen = () => {
   return (
     <View style={tw`flex-1 h-full bg-[#191327]`}>
       <Text style={tw`text-white text-4xl py-4 px-3 mt-24`}>Book Reels 📚 </Text>
+      <TextInput
+        value={search}
+        onChangeText={(text: string) => setSearch(text)}
+        placeholder='Search for books'
+        style={tw`px-6 py-4 rounded-md border-2 border-[#2A213F] flex justify-start items-start p-4`}
+      />
 
       <View style={tw`p-4 gap-5 mb-42`}>
         {isLoading ?
