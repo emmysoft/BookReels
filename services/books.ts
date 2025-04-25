@@ -5,6 +5,10 @@ class BookService {
         return await apiClient.get('/books')
     }
 
+    getRandomBooks = async () => {
+        return await apiClient.get('/books/random')
+    }
+
     getCharacters = async () => {
         return await apiClient.get(`/characters`)
     }

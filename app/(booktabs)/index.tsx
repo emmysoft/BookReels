@@ -18,6 +18,8 @@ const HomeScreen = () => {
 
   //like state
   const [likedBooks, setLikedBooks] = useState<any[]>([]);
+  //like counts
+  const [likeCount, setLikeCount] = useState(0);
 
   //toggle like and unlike
   const handleToggleLike = async (book: any) => {
@@ -28,6 +30,7 @@ const HomeScreen = () => {
       : [...likedBooks, book]; // add back (optional)
 
     setLikedBooks(updatedLikes);
+    setLikeCount(updatedLikes.length);
     await AsyncStorage.setItem('likedBooks', JSON.stringify(updatedLikes));
     // console.log("Updated liked books:", updatedLikes);
   };
@@ -73,8 +76,10 @@ const HomeScreen = () => {
     return (
       <>
         <TouchableOpacity onPress={() => handleBookPress(book)} style={tw`p-4 flex justify-start items-start gap-3 p-4 w-full mb-6 bg-[#2a213f] rounded-xl`}>
+          <Image source={{ uri: book?.cover }} style={tw`w-32 h-32 rounded-xl`} alt="Book Image" />
+          <Text style={tw`text-white text-left text-xl`}>Title: {book?.title}</Text>
+          <Text style={tw`text-white text-left text-sm`}>Pages: {book?.pages} | {book?.releaseDate}</Text>
           <View style={tw`flex-row justify-start items-start gap-32 min-w-full`}>
-            <Image source={{ uri: book?.cover }} style={tw`w-32 h-32 rounded-xl`} alt="Book Image" />
             <Pressable onPress={() => handleToggleLike(book)}>
               <Ionicons
                 name={likedBooks.some((b) => b.title === book.title) ? 'heart' : 'heart-outline'}
@@ -82,10 +87,8 @@ const HomeScreen = () => {
                 color={likedBooks.some((b) => b.title === book.title) ? 'red' : 'white'}
               />
             </Pressable>
+            <Text style={tw`text-white text-left text-sm`}>{likeCount}</Text>
           </View>
-          <Text style={tw`text-white text-left text-xl`}>Title: {book?.title}</Text>
-          <Text style={tw`text-white text-left text-sm`}>About: {book?.description}</Text>
-          <Text style={tw`text-white text-left text-sm`}>Pages: {book?.pages} | {book?.releaseDate}</Text>
         </TouchableOpacity>
       </>
     )
@@ -93,7 +96,7 @@ const HomeScreen = () => {
 
   return (
     <View style={tw`flex-1 h-full bg-[#191327]`}>
-      <Text style={tw`text-white text-4xl py-4 px-3 mt-24`}>Book Reels 📚 </Text>
+      <Text style={tw`text-white text-4xl py-4 px-3 mt-24`}>Harry Potter Diaries  📚 </Text>
       <TextInput
         value={search}
         onChangeText={(text: string) => setSearch(text)}

@@ -2,7 +2,7 @@ import { View, Text } from 'react-native'
 import React, { useEffect, useState } from 'react';
 
 import tw from 'twrnc';
-import HomeScreen from '../(booktabs)';
+import Login from '../(auth)';
 
 const OnboardingScreen = () => {
 
@@ -21,7 +21,7 @@ const OnboardingScreen = () => {
                     <Text style={tw`text-3xl text-white`}>BookReels</Text>
                 </View>
                 :
-                <HomeScreen />
+                <Login />
             }
         </>
     )

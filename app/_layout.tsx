@@ -34,6 +34,7 @@ export default function RootLayout() {
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack>
             <Stack.Screen name='onboarding' options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(booktabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
