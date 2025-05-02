@@ -13,9 +13,29 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  //function to check if passwords match while still typing
+  const handleConfirmPassword = (text: string) => {
+    setConfirmPassword(text);
+    if (text !== password) {
+      Toast.show({
+        type: 'error',
+        text1: 'Passwords do not match',
+        text2: 'Try again'
+      })
+    }
+  }
 
   const handleRegister = async () => {
     setLoading(true);
+    if (password !== confirmPassword) {
+      Toast.show({
+        type: 'error',
+        text1: 'Passwords do not match',
+        text2: 'Try again'
+      })
+    };
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
       console.log(res);
@@ -56,6 +76,15 @@ const SignUp = () => {
               placeholder='Password'
               placeholderTextColor={'#fff'}
               style={tw`p-4 w-full text-[#fff] text-xl rounded-xl border-2 border-[#fff]`}
+              secureTextEntry={true}
+            />
+            <TextInput
+              value={confirmPassword}
+              onChangeText={handleConfirmPassword}
+              placeholder='Password'
+              placeholderTextColor={'#fff'}
+              style={tw`p-4 w-full text-[#fff] text-xl rounded-xl border-2 border-[#fff]`}
+              secureTextEntry={true}
             />
           </View>
 

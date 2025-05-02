@@ -75,7 +75,8 @@ const HomeScreen = () => {
   const RenderBooks = ({ book }: any) => {
     return (
       <>
-        <TouchableOpacity onPress={() => handleBookPress(book)} style={tw`p-4 flex justify-start items-start gap-3 p-4 w-full mb-6 bg-[#2a213f] rounded-xl`}>
+        <TouchableOpacity onPress={() => handleBookPress(book)} style={tw`p-4 flex-1 p-4 m-6 bg-[#2a213f] rounded-xl`}>
+          <View style={tw`flex justify-start items-start gap-4 p-2`}>
           <Image source={{ uri: book?.cover }} style={tw`w-32 h-32 rounded-xl`} alt="Book Image" />
           <Text style={tw`text-white text-left text-xl`}>Title: {book?.title}</Text>
           <Text style={tw`text-white text-left text-sm`}>Pages: {book?.pages} | {book?.releaseDate}</Text>
@@ -87,7 +88,9 @@ const HomeScreen = () => {
                 color={likedBooks.some((b) => b.title === book.title) ? 'red' : 'white'}
               />
             </Pressable>
+            {/**likes per book */}
             <Text style={tw`text-white text-left text-sm`}>{likeCount}</Text>
+          </View>
           </View>
         </TouchableOpacity>
       </>
@@ -96,13 +99,16 @@ const HomeScreen = () => {
 
   return (
     <View style={tw`flex-1 h-full bg-[#191327]`}>
-      <Text style={tw`text-white text-4xl py-4 px-3 mt-24`}>Harry Potter Diaries  📚 </Text>
-      <TextInput
-        value={search}
-        onChangeText={(text: string) => setSearch(text)}
-        placeholder='Search for books'
-        style={tw`px-6 py-4 rounded-md border-2 border-[#2A213F] flex justify-start items-start p-4`}
-      />
+      <Text style={tw`text-white text-4xl py-4 px-3 mt-24`}>BookReels  📚 </Text>
+      <View style={tw`p-4 min-w-full`}>
+        <TextInput
+          value={search}
+          onChangeText={(text: string) => setSearch(text)}
+          placeholder='Search for books'
+          style={tw`px-6 py-4 rounded-md border-2 border-[#2A213F] flex justify-start items-start text-white text-xl w-full`}
+          placeholderTextColor={"#fff"}
+        />
+      </View>
 
       <View style={tw`p-4 gap-5 mb-42`}>
         {isLoading ?
@@ -118,10 +124,10 @@ const HomeScreen = () => {
                 <Text style={tw`text-white text-left text-xl`}>No books found</Text>
               </View>
             }
-            ItemSeparatorComponent={() => <View style={tw`h-8`} />}
+            // ItemSeparatorComponent={() => <View style={tw`h-8`} />}
+            numColumns={2}
             scrollEnabled
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ flexGrow: 1 }}
           />
         }
       </View>
