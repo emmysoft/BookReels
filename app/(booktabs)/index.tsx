@@ -30,12 +30,15 @@ const HomeScreen = () => {
       : [...likedBooks, book]; // add back (optional)
 
     setLikedBooks(updatedLikes);
-    setLikeCount(updatedLikes.length);
+    handleLikeCount();
     await AsyncStorage.setItem('likedBooks', JSON.stringify(updatedLikes));
-    // console.log("Updated liked books:", updatedLikes);
   };
 
 
+  //function to handle likes count for each book
+  const handleLikeCount = () => {
+    setLikeCount(likeCount + 1);
+  }
 
   useEffect(() => {
     const loadLikedBooks = async () => {
@@ -89,7 +92,8 @@ const HomeScreen = () => {
               />
             </Pressable>
             {/**likes per book */}
-            <Text style={tw`text-white text-left text-sm`}>{likeCount}</Text>
+            <Text style={tw`text-white text-left text-base`}>{likeCount}</Text>
+            
           </View>
           </View>
         </TouchableOpacity>
