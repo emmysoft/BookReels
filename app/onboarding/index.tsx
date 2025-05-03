@@ -1,9 +1,9 @@
 import { View, Text } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import Login from './(auth)';
+import Login from '../(auth)';
 import tw from 'twrnc';
 
-const HomeScreen = () => {
+const OnboardingScreen = () => {
 
     const [showSplash, setShowSplash] = useState(false);
 
@@ -26,4 +26,4 @@ const HomeScreen = () => {
     )
 }
 
-export default HomeScreen;
+export default OnboardingScreen;

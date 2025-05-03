@@ -81,7 +81,7 @@ const SignUp = () => {
             <TextInput
               value={confirmPassword}
               onChangeText={handleConfirmPassword}
-              placeholder='Password'
+              placeholder='Confirm Password'
               placeholderTextColor={'#fff'}
               style={tw`p-4 w-full text-[#fff] text-xl rounded-xl border-2 border-[#fff]`}
               secureTextEntry={true}

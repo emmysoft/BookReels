@@ -34,7 +34,7 @@ export default function RootLayout() {
       <SafeAreaView style={{ flex: 1 }}>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(booktabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />

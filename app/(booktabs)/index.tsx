@@ -80,21 +80,23 @@ const HomeScreen = () => {
       <>
         <TouchableOpacity onPress={() => handleBookPress(book)} style={tw`p-4 flex-1 p-4 m-6 bg-[#2a213f] rounded-xl`}>
           <View style={tw`flex justify-start items-start gap-4 p-2`}>
-          <Image source={{ uri: book?.cover }} style={tw`w-32 h-32 rounded-xl`} alt="Book Image" />
-          <Text style={tw`text-white text-left text-xl`}>Title: {book?.title}</Text>
-          <Text style={tw`text-white text-left text-sm`}>Pages: {book?.pages} | {book?.releaseDate}</Text>
-          <View style={tw`flex-row justify-start items-start gap-32 min-w-full`}>
-            <Pressable onPress={() => handleToggleLike(book)}>
-              <Ionicons
-                name={likedBooks.some((b) => b.title === book.title) ? 'heart' : 'heart-outline'}
-                size={24}
-                color={likedBooks.some((b) => b.title === book.title) ? 'red' : 'white'}
-              />
-            </Pressable>
-            {/**likes per book */}
-            <Text style={tw`text-white text-left text-base`}>{likeCount}</Text>
-            
-          </View>
+            <Image source={{ uri: book?.cover }} style={tw`w-32 h-32 rounded-xl`} alt="Book Image" />
+            <Text style={tw`text-white text-left text-xl`}>Title: {book?.title}</Text>
+            <Text style={tw`text-white text-left text-sm`}>Pages: {book?.pages} | {book?.releaseDate}</Text>
+            <View style={tw`flex-row justify-center items-center gap-4 w-full`}>
+              <Pressable onPress={() => handleToggleLike(book)}>
+                <Ionicons
+                  name={likedBooks.some((b) => b.title === book.title) ? 'heart' : 'heart-outline'}
+                  size={24}
+                  color={likedBooks.some((b) => b.title === book.title) ? 'red' : 'white'}
+                />
+              </Pressable>
+              <Pressable onPress={() => router.push("/(booktabs)/discussion")}>
+                <Ionicons name="chatbubble-ellipses-outline" size={24} color="white" />
+              </Pressable>
+              {/**likes per book */}
+              <Text style={tw`text-white text-left text-base`}>{likeCount}</Text>
+            </View>
           </View>
         </TouchableOpacity>
       </>

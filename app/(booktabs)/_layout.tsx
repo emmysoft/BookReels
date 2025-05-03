@@ -44,10 +44,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="characters"
+        name="discussion"
         options={{
-          title: 'Actors',
-          tabBarIcon: ({ focused }) => <Ionicons size={28} name="person-outline" color={focused ? "#0000ff" : "#fff"} />,
+          title: "Discussions",
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="chatbubble-ellipses-outline" color={color} />,
         }}
       />
     </Tabs>

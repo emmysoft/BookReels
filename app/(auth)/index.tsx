@@ -1,10 +1,11 @@
 import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import tw from 'twrnc';
 import { router } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { AUTH } from '@/firebase.config';
 import Toast from 'react-native-toast-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = () => {
 
@@ -14,10 +15,24 @@ const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
+    //async storage for login credentials
+    useEffect(() => {
+        const getCredentials = async () => {
+            const email = await AsyncStorage.getItem('email');
+            const password = await AsyncStorage.getItem('password');
+            if (email && password) {
+                setEmail(email);
+                setPassword(password);
+            }
+        }
+        getCredentials();
+    }, []);
+
     const handleLogin = async () => {
         setLoading(true);
         try {
             const res = await signInWithEmailAndPassword(auth, email, password);
+            await AsyncStorage.setItem('email', email);
             console.log(res);
             Toast.show({
                 type: 'success',
