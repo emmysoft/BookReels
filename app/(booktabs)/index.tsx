@@ -1,14 +1,26 @@
-import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, Pressable, TextInput } from 'react-native'
+import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, Pressable, TextInput, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import tw from 'twrnc';
-import bookService from '@/services/books';
+import { fetchBooks } from '@/services/books';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
+
+const categories = [
+  { label: "Fantasy", query: "fantasy books" },
+  { label: "Romance", query: "romance books" },
+  { label: "Science", query: "science books" },
+  { label: "History", query: "history books" },
+  { label: "Adventure", query: "adventure books" },
+];
+
 const HomeScreen = () => {
 
   const router = useRouter();
+
+  //category books
+  const [categoryBooks, setCategoryBooks] = useState<{ [key: string]: any[] }>({});
 
   //state for book data
   const [books, setBooks] = useState<any[]>([]);
@@ -19,36 +31,74 @@ const HomeScreen = () => {
   //like state
   const [likedBooks, setLikedBooks] = useState<any[]>([]);
   //like counts
-  const [likeCount, setLikeCount] = useState(0);
+  const [likeCounts, setLikeCounts] = useState<{ [key: string]: number }>({});
+
+  //handle search 
+  const handleSearch = async () => {
+    if (!search) return;
+    setIsLoading(true);
+    const res = await fetchBooks(search);
+    setBooks(res);
+    setIsLoading(false);
+  };
+
+  //handle category display
+  useEffect(() => {
+    const fetchAllCategories = async () => {
+      setIsLoading(true);
+      const newCategoryBooks: { [key: string]: any[] } = {};
+
+      for (const category of categories) {
+        const books = await fetchBooks(category.query);
+        newCategoryBooks[category.label] = books;
+      }
+
+      setCategoryBooks(newCategoryBooks);
+      setIsLoading(false);
+    };
+
+    fetchAllCategories();
+  }, []);
 
   //toggle like and unlike
   const handleToggleLike = async (book: any) => {
     const isAlreadyLiked = likedBooks.some((b: any) => b.title === book?.title);
 
-    const updatedLikes = isAlreadyLiked
-      ? likedBooks.filter((b) => b.title !== book?.title) // remove
-      : [...likedBooks, book]; // add back (optional)
+    let updatedLikes;
+    let updatedLikeCounts = { ...likeCounts };
+
+    if (isAlreadyLiked) {
+      updatedLikes = likedBooks.filter((b) => b.title !== book?.title);
+      updatedLikeCounts[book.title] = (updatedLikeCounts[book.title] || 1) - 1;
+    } else {
+      updatedLikes = [...likedBooks, book];
+      updatedLikeCounts[book.title] = (updatedLikeCounts[book.title] || 0) + 1;
+    }
 
     setLikedBooks(updatedLikes);
-    handleLikeCount();
+    setLikeCounts(updatedLikeCounts);
     await AsyncStorage.setItem('likedBooks', JSON.stringify(updatedLikes));
+    await AsyncStorage.setItem('likeCounts', JSON.stringify(updatedLikeCounts));
   };
 
 
-  //function to handle likes count for each book
-  const handleLikeCount = () => {
-    setLikeCount(likeCount + 1);
-  }
 
+  //function to handle likes count for each book
   useEffect(() => {
     const loadLikedBooks = async () => {
       const saved = await AsyncStorage.getItem('likedBooks');
+      const savedCounts = await AsyncStorage.getItem('likeCounts');
+
       if (saved) {
         setLikedBooks(JSON.parse(saved));
+      }
+      if (savedCounts) {
+        setLikeCounts(JSON.parse(savedCounts));
       }
     };
     loadLikedBooks();
   }, []);
+
 
   //route to likes screen with books properties
   const handleBookPress = (book: any) => {
@@ -58,31 +108,18 @@ const HomeScreen = () => {
   //loading
   const [isLoading, setIsLoading] = useState(false);
 
-  //fetch books
-  useEffect(() => {
-    const fetchBooks = async () => {
-      setIsLoading(true);
-      try {
-        const res: any = await bookService.getBooks();
-        // console.log(res?.data);
-        setBooks(res?.data);
-      } catch (error: any) {
-        console.log(error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchBooks();
-  }, []);
-
   const RenderBooks = ({ book }: any) => {
+
+    const volume = book.volumeInfo;
+
     return (
       <>
         <TouchableOpacity onPress={() => handleBookPress(book)} style={tw`p-4 flex-1 p-4 m-6 bg-[#2a213f] rounded-xl`}>
           <View style={tw`flex justify-start items-start gap-4 p-2`}>
-            <Image source={{ uri: book?.cover }} style={tw`w-32 h-32 rounded-xl`} alt="Book Image" />
-            <Text style={tw`text-white text-left text-xl`}>Title: {book?.title}</Text>
-            <Text style={tw`text-white text-left text-sm`}>Pages: {book?.pages} | {book?.releaseDate}</Text>
+            <Image source={{ uri: volume?.imageLinks?.thumbnail }} style={tw`w-32 h-32 rounded-xl`} alt="Book Image" />
+            <Text style={tw`text-white text-left text-xl`}>Title: {volume?.title}</Text>
+            <Text style={tw`text-white text-left text-sm`}>Author: {volume?.authors}
+            </Text><Text style={tw`text-white text-left text-sm`}> Publisher: {volume?.publisher}</Text>
             <View style={tw`flex-row justify-center items-center gap-4 w-full`}>
               <Pressable onPress={() => handleToggleLike(book)}>
                 <Ionicons
@@ -95,7 +132,7 @@ const HomeScreen = () => {
                 <Ionicons name="chatbubble-ellipses-outline" size={24} color="white" />
               </Pressable>
               {/**likes per book */}
-              <Text style={tw`text-white text-left text-base`}>{likeCount}</Text>
+              <Text style={tw`text-white text-left text-base`}>{likeCounts[volume?.title] || 0}</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -104,40 +141,42 @@ const HomeScreen = () => {
   }
 
   return (
-    <View style={tw`flex-1 h-full bg-[#191327]`}>
-      <Text style={tw`text-white text-4xl py-4 px-3 mt-24`}>BookReels  📚 </Text>
-      <View style={tw`p-4 min-w-full`}>
-        <TextInput
-          value={search}
-          onChangeText={(text: string) => setSearch(text)}
-          placeholder='Search for books'
-          style={tw`px-6 py-4 rounded-md border-2 border-[#2A213F] flex justify-start items-start text-white text-xl w-full`}
-          placeholderTextColor={"#fff"}
-        />
-      </View>
+    <ScrollView style={tw`flex-1 bg-[#191327]`}>
+      <Text style={tw`text-white text-4xl py-4 px-3 mt-24`}>BookReels 📚</Text>
 
-      <View style={tw`p-4 gap-5 mb-42`}>
-        {isLoading ?
-          <ActivityIndicator size="large" color="#fff" />
-          :
+      {search.length === 0 ? (
+        categories.map((category) => (
+          <View key={category.label} style={tw`mb-6`}>
+            <Text style={tw`text-white text-2xl px-4 mb-2`}>{category.label}</Text>
+            <FlatList
+              horizontal
+              data={categoryBooks[category.label]}
+              renderItem={({ item }) => <RenderBooks book={item} />}
+              keyExtractor={(item) => item._id || item.title}
+              showsHorizontalScrollIndicator={false}
+            />
+          </View>
+        ))
+      ) : (
+        <>
+          <Text style={tw`text-white text-2xl px-4 mb-2`}>Search Results</Text>
           <FlatList
             data={books}
             renderItem={({ item }) => <RenderBooks book={item} />}
-            keyExtractor={(item: any, index) => item._id || index.toString()}
-            onEndReachedThreshold={0.5}
-            ListEmptyComponent={() =>
-              <View style={tw`m-auto`}>
-                <Text style={tw`text-white text-left text-xl`}>No books found</Text>
-              </View>
-            }
-            // ItemSeparatorComponent={() => <View style={tw`h-8`} />}
+            keyExtractor={(item, index) => item._id || index.toString()}
             numColumns={2}
             scrollEnabled
             showsVerticalScrollIndicator={false}
+            ListEmptyComponent={() => (
+              <View style={tw`m-auto`}>
+                <Text style={tw`text-white text-left text-xl`}>No books found</Text>
+              </View>
+            )}
           />
-        }
-      </View>
-    </View>
+        </>
+      )}
+    </ScrollView>
+
   )
 }
 

@@ -1,9 +1,11 @@
 //set api call for url based on axios
 import axios from 'axios';
-import { baseUrl } from './baseUrl';
+import { BASE_URL } from '@env';
+
+console.log(BASE_URL);
 
 export const apiClient = axios.create({
-    baseURL: baseUrl,
+    baseURL: BASE_URL,
     headers: {
         "Content-Type": "application/json",
     },
