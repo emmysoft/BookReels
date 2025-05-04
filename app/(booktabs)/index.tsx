@@ -8,11 +8,17 @@ import { useRouter } from 'expo-router';
 
 
 const categories = [
+  { label: "Faith", query: "faith books" },
   { label: "Fantasy", query: "fantasy books" },
   { label: "Romance", query: "romance books" },
   { label: "Science", query: "science books" },
   { label: "History", query: "history books" },
   { label: "Adventure", query: "adventure books" },
+  { label: "Horror", query: "horror books" },
+  { label: "Mystery", query: "mystery books" },
+  { label: "Thriller", query: "thriller books" },
+  { label: "Drama", query: "drama books" },
+  { label: "Comedy", query: "comedy books" },
 ];
 
 const HomeScreen = () => {
@@ -114,26 +120,9 @@ const HomeScreen = () => {
 
     return (
       <>
-        <TouchableOpacity onPress={() => handleBookPress(book)} style={tw`p-4 flex-1 p-4 m-6 bg-[#2a213f] rounded-xl`}>
+        <TouchableOpacity style={tw`flex-1 p-4 rounded-xl m-6`}>
           <View style={tw`flex justify-start items-start gap-4 p-2`}>
-            <Image source={{ uri: volume?.imageLinks?.thumbnail }} style={tw`w-32 h-32 rounded-xl`} alt="Book Image" />
-            <Text style={tw`text-white text-left text-xl`}>Title: {volume?.title}</Text>
-            <Text style={tw`text-white text-left text-sm`}>Author: {volume?.authors}
-            </Text><Text style={tw`text-white text-left text-sm`}> Publisher: {volume?.publisher}</Text>
-            <View style={tw`flex-row justify-center items-center gap-4 w-full`}>
-              <Pressable onPress={() => handleToggleLike(book)}>
-                <Ionicons
-                  name={likedBooks.some((b) => b.title === book.title) ? 'heart' : 'heart-outline'}
-                  size={24}
-                  color={likedBooks.some((b) => b.title === book.title) ? 'red' : 'white'}
-                />
-              </Pressable>
-              <Pressable onPress={() => router.push("/(booktabs)/discussion")}>
-                <Ionicons name="chatbubble-ellipses-outline" size={24} color="white" />
-              </Pressable>
-              {/**likes per book */}
-              <Text style={tw`text-white text-left text-base`}>{likeCounts[volume?.title] || 0}</Text>
-            </View>
+            <Image source={{ uri: volume?.imageLinks?.thumbnail }} style={tw`w-42 h-42 rounded-xl m-auto`} alt="Book Image" />
           </View>
         </TouchableOpacity>
       </>
@@ -141,42 +130,43 @@ const HomeScreen = () => {
   }
 
   return (
-    <ScrollView style={tw`flex-1 bg-[#191327]`}>
-      <Text style={tw`text-white text-4xl py-4 px-3 mt-24`}>BookReels 📚</Text>
+    <>
+      <ScrollView style={tw`flex-1 bg-[#191327]`}>
+        <Text style={tw`text-white text-4xl py-4 px-3 mt-24`}>BookReels 📚</Text>
 
-      {search.length === 0 ? (
-        categories.map((category) => (
-          <View key={category.label} style={tw`mb-6`}>
-            <Text style={tw`text-white text-2xl px-4 mb-2`}>{category.label}</Text>
+        {search.length === 0 ? (
+          categories.map((category) => (
+            <View key={category.label} style={tw`mb-6`}>
+              <Text style={tw`text-white text-2xl px-4 mb-2`}>{category.label}</Text>
+              <FlatList
+                horizontal
+                data={categoryBooks[category.label]}
+                renderItem={({ item }) => <RenderBooks book={item} />}
+                keyExtractor={(item) => item._id || item.title}
+                showsHorizontalScrollIndicator={false}
+              />
+            </View>
+          ))
+        ) : (
+          <>
+            <Text style={tw`text-white text-2xl px-4 mb-2`}>Search Results</Text>
             <FlatList
-              horizontal
-              data={categoryBooks[category.label]}
+              data={books}
               renderItem={({ item }) => <RenderBooks book={item} />}
-              keyExtractor={(item) => item._id || item.title}
-              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item, index) => item._id || index.toString()}
+              numColumns={2}
+              scrollEnabled
+              showsVerticalScrollIndicator={false}
+              ListEmptyComponent={() => (
+                <View style={tw`m-auto`}>
+                  <Text style={tw`text-white text-left text-xl`}>No books found</Text>
+                </View>
+              )}
             />
-          </View>
-        ))
-      ) : (
-        <>
-          <Text style={tw`text-white text-2xl px-4 mb-2`}>Search Results</Text>
-          <FlatList
-            data={books}
-            renderItem={({ item }) => <RenderBooks book={item} />}
-            keyExtractor={(item, index) => item._id || index.toString()}
-            numColumns={2}
-            scrollEnabled
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={() => (
-              <View style={tw`m-auto`}>
-                <Text style={tw`text-white text-left text-xl`}>No books found</Text>
-              </View>
-            )}
-          />
-        </>
-      )}
-    </ScrollView>
-
+          </>
+        )}
+      </ScrollView>
+    </>
   )
 }
 

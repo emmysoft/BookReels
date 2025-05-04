@@ -37,17 +37,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="likes"
+        name="library"
         options={{
-          title: 'Likes',
-          tabBarIcon: ({ focused }) => <Ionicons size={28} name="heart" color={focused ? "#ff0000" : "#fff"} />,
+          title: 'Library',
+          tabBarIcon: ({ focused }) => <Ionicons size={28} name="library" color={focused ? "#ff0000" : "#fff"} />,
         }}
       />
       <Tabs.Screen
-        name="discussion"
+        name="profile"
         options={{
-          title: "Discussions",
-          tabBarIcon: ({ color }) => <Ionicons size={28} name="chatbubble-ellipses-outline" color={color} />,
+          title: "Me",
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="person" color={color} />,
         }}
       />
     </Tabs>
