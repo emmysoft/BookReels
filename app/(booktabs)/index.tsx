@@ -1,14 +1,16 @@
-import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, Pressable, TextInput, ScrollView } from 'react-native'
+import { View, Text, FlatList, Image, ActivityIndicator, Pressable, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import tw from 'twrnc';
 import { fetchBooks } from '@/services/books';
-import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
 
 const categories = [
   { label: "Faith", query: "faith books" },
+  { label: "Family", query: "family books" },
+  { label: "Education", query: "education books" },
+  { label: "Parenting", query: "parenting books" },
   { label: "Fantasy", query: "fantasy books" },
   { label: "Romance", query: "romance books" },
   { label: "Science", query: "science books" },
@@ -19,6 +21,8 @@ const categories = [
   { label: "Thriller", query: "thriller books" },
   { label: "Drama", query: "drama books" },
   { label: "Comedy", query: "comedy books" },
+  { label: "Biography", query: "biography books" },
+  { label: "Self Help", query: "self help books" },
 ];
 
 const HomeScreen = () => {
@@ -39,15 +43,6 @@ const HomeScreen = () => {
   //like counts
   const [likeCounts, setLikeCounts] = useState<{ [key: string]: number }>({});
 
-  //handle search 
-  const handleSearch = async () => {
-    if (!search) return;
-    setIsLoading(true);
-    const res = await fetchBooks(search);
-    setBooks(res);
-    setIsLoading(false);
-  };
-
   //handle category display
   useEffect(() => {
     const fetchAllCategories = async () => {
@@ -67,25 +62,25 @@ const HomeScreen = () => {
   }, []);
 
   //toggle like and unlike
-  const handleToggleLike = async (book: any) => {
-    const isAlreadyLiked = likedBooks.some((b: any) => b.title === book?.title);
+  // const handleToggleLike = async (book: any) => {
+  //   const isAlreadyLiked = likedBooks.some((b: any) => b.title === book?.title);
 
-    let updatedLikes;
-    let updatedLikeCounts = { ...likeCounts };
+  //   let updatedLikes;
+  //   let updatedLikeCounts = { ...likeCounts };
 
-    if (isAlreadyLiked) {
-      updatedLikes = likedBooks.filter((b) => b.title !== book?.title);
-      updatedLikeCounts[book.title] = (updatedLikeCounts[book.title] || 1) - 1;
-    } else {
-      updatedLikes = [...likedBooks, book];
-      updatedLikeCounts[book.title] = (updatedLikeCounts[book.title] || 0) + 1;
-    }
+  //   if (isAlreadyLiked) {
+  //     updatedLikes = likedBooks.filter((b) => b.title !== book?.title);
+  //     updatedLikeCounts[book.title] = (updatedLikeCounts[book.title] || 1) - 1;
+  //   } else {
+  //     updatedLikes = [...likedBooks, book];
+  //     updatedLikeCounts[book.title] = (updatedLikeCounts[book.title] || 0) + 1;
+  //   }
 
-    setLikedBooks(updatedLikes);
-    setLikeCounts(updatedLikeCounts);
-    await AsyncStorage.setItem('likedBooks', JSON.stringify(updatedLikes));
-    await AsyncStorage.setItem('likeCounts', JSON.stringify(updatedLikeCounts));
-  };
+  //   setLikedBooks(updatedLikes);
+  //   setLikeCounts(updatedLikeCounts);
+  //   await AsyncStorage.setItem('likedBooks', JSON.stringify(updatedLikes));
+  //   await AsyncStorage.setItem('likeCounts', JSON.stringify(updatedLikeCounts));
+  // };
 
 
 
@@ -105,26 +100,23 @@ const HomeScreen = () => {
     loadLikedBooks();
   }, []);
 
-
-  //route to likes screen with books properties
-  const handleBookPress = (book: any) => {
-    router.push('/(booktabs)/likes');
-  }
-
   //loading
   const [isLoading, setIsLoading] = useState(false);
 
   const RenderBooks = ({ book }: any) => {
-
     const volume = book.volumeInfo;
-
+    const id = book.id;
     return (
       <>
-        <TouchableOpacity style={tw`flex-1 p-4 rounded-xl m-6`}>
+        <Pressable onPress={() => router.push({ pathname: '/bookdetails', params: { id: id } })} style={tw`flex-1 p-4 rounded-xl`}>
           <View style={tw`flex justify-start items-start gap-4 p-2`}>
-            <Image source={{ uri: volume?.imageLinks?.thumbnail }} style={tw`w-42 h-42 rounded-xl m-auto`} alt="Book Image" />
+            <Image
+              source={{ uri: volume?.imageLinks?.thumbnail }}
+              style={tw`w-50 h-50 rounded-xl m-auto`}
+              alt="Book Image"
+            />
           </View>
-        </TouchableOpacity>
+        </Pressable>
       </>
     )
   }
@@ -132,37 +124,44 @@ const HomeScreen = () => {
   return (
     <>
       <ScrollView style={tw`flex-1 bg-[#191327]`}>
-        <Text style={tw`text-white text-4xl py-4 px-3 mt-24`}>BookReels 📚</Text>
-
+        <Text style={tw`text-white text-4xl py-4 px-3 mt-24 mb-12`}>BookReels 📚</Text>
         {search.length === 0 ? (
           categories.map((category) => (
             <View key={category.label} style={tw`mb-6`}>
               <Text style={tw`text-white text-2xl px-4 mb-2`}>{category.label}</Text>
-              <FlatList
-                horizontal
-                data={categoryBooks[category.label]}
-                renderItem={({ item }) => <RenderBooks book={item} />}
-                keyExtractor={(item) => item._id || item.title}
-                showsHorizontalScrollIndicator={false}
-              />
+              {isLoading ?
+                <ActivityIndicator size="large" color="#fff" style={tw`m-auto`} />
+                :
+                <FlatList
+                  horizontal
+                  data={categoryBooks[category.label]}
+                  renderItem={({ item }) => <RenderBooks book={item} />}
+                  keyExtractor={(item) => item._id || item.title}
+                  showsHorizontalScrollIndicator={false}
+                />
+              }
             </View>
           ))
         ) : (
           <>
             <Text style={tw`text-white text-2xl px-4 mb-2`}>Search Results</Text>
-            <FlatList
-              data={books}
-              renderItem={({ item }) => <RenderBooks book={item} />}
-              keyExtractor={(item, index) => item._id || index.toString()}
-              numColumns={2}
-              scrollEnabled
-              showsVerticalScrollIndicator={false}
-              ListEmptyComponent={() => (
-                <View style={tw`m-auto`}>
-                  <Text style={tw`text-white text-left text-xl`}>No books found</Text>
-                </View>
-              )}
-            />
+            {isLoading ?
+              <ActivityIndicator size="large" color="#fff" style={tw`m-auto`} />
+              :
+              <FlatList
+                data={books}
+                renderItem={({ item }) => <RenderBooks book={item} />}
+                keyExtractor={(item, index) => item._id || index.toString()}
+                numColumns={2}
+                scrollEnabled
+                showsVerticalScrollIndicator={false}
+                ListEmptyComponent={() => (
+                  <View style={tw`m-auto`}>
+                    <Text style={tw`text-white text-left text-xl`}>No books found</Text>
+                  </View>
+                )}
+              />
+            }
           </>
         )}
       </ScrollView>

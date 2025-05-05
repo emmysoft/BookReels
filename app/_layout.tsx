@@ -37,6 +37,8 @@ export default function RootLayout() {
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(booktabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="bookdetails" options={{ headerShown: false }} />
+            <Stack.Screen name="read" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
           <Toast />

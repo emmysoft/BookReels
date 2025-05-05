@@ -1,16 +1,13 @@
-// import { BASE_URL, API_KEY } from '@env';
+import { GOOGLE_API_KEY, GOOGLE_BASE_URL } from '@env';
 import axios from 'axios';
-
-const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
-const API_KEY = 'AIzaSyBJt_8_obdFDOziIJGFnVEovnu1i4bCkOY';
 
 export const fetchBooks = async (searchTerm: string) => {
     try {
-        const response = await axios.get(BASE_URL, {
+        const response = await axios.get(GOOGLE_BASE_URL, {
             params: {
                 q: searchTerm,
                 maxResults: 20,
-                key: API_KEY,
+                key: GOOGLE_API_KEY,
             },
         });
         return response.data.items; // array of book results
@@ -19,3 +16,25 @@ export const fetchBooks = async (searchTerm: string) => {
         throw error;
     }
 };
+
+export const fetchBookId = async (id: string) => {
+    try {
+        const response = await axios.get(`${GOOGLE_BASE_URL}/${id}`, {
+            params: {
+                key: GOOGLE_API_KEY,
+            },
+        });
+        const data = await response.data;
+
+        return {
+            id: data.id,
+            title: data.volumeInfo.title,
+            authors: data.volumeInfo.authors,
+            description: data.volumeInfo.description,
+            imageLinks: data.volumeInfo.imageLinks,
+        };
+    } catch (error) {
+        console.error('Error fetching book ID:', error);
+        throw error;
+    }
+}
