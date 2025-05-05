@@ -16,7 +16,7 @@ type Book = {
   };
 };
 
-const STORAGE_KEY = "bookedmarkBooks";
+const STORAGE_KEY = "bookmarkedBooks";
 
 const BookDetails = () => {
 
@@ -35,6 +35,7 @@ const BookDetails = () => {
         const res: any = await fetchBookId(id as string);
         console.log('Fetch book Details:', res);
         setBook(res);
+        checkIfBookmarked(res?.id);
       } catch (error: any) {
         console.log(error);
       }

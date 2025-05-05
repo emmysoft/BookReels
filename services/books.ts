@@ -1,4 +1,4 @@
-import { GOOGLE_API_KEY, GOOGLE_BASE_URL } from '@env';
+import { GOOGLE_API_KEY, GOOGLE_BASE_URL } from '@/api/key';
 import axios from 'axios';
 
 export const fetchBooks = async (searchTerm: string) => {

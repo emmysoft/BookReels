@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, Image, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import tw from 'twrnc';
 
