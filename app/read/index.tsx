@@ -29,9 +29,9 @@ const Read = () => {
   if (!book) return <Text style={tw`text-white`}>Loading...</Text>;
 
   return (
-    <ScrollView style={tw`bg-[#191327] p-20`}>
-      <View style={tw`flex-row justify-center items-center gap-4`}>
-        <Text style={tw`text-white text-2xl mb-4`}>{book.title}-</Text>
+    <ScrollView style={tw`bg-[#191327] p-20 h-full flex-1`}>
+      <View style={tw`flex justify-center items-center gap-4`}>
+        <Text style={tw`text-white text-2xl mb-4`}>{book.title}</Text>
         <Text style={tw`text-white text-2xl mb-4`}>{book.authors}</Text>
       </View>
       <Text style={tw`text-white h-full text-xl`}>{book.description || 'No preview available'}</Text>

@@ -38,7 +38,7 @@ const Library = () => {
       style={tw`mb-4 bg-[#28203F] p-4 rounded-xl justify-center items-center`}
     >
       <Image
-        source={{ uri: item.imageLinks?.thumbnail }}
+        source={{ uri: item.imageLinks?.thumbnail?.replace("http://", "https://") }}
         style={tw`w-36 h-36 rounded-md`}
       />
       <Text style={tw`text-white text-lg mt-2`}>{item.title}</Text>

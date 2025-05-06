@@ -77,7 +77,7 @@ const BookDetails = () => {
   return (
     <>
       <ScrollView style={tw`flex-1 bg-[#191327] p-12 h-full`}>
-        <Image source={{ uri: book?.imageLinks?.thumbnail }} style={tw`rounded-xl m-auto w-50 h-50`} />
+        <Image source={{ uri: book?.imageLinks?.thumbnail?.replace("http://", "https://") }} style={tw`rounded-xl m-auto w-50 h-50`} />
         <Text style={tw`text-white text-2xl font-bold mt-4`}>{book?.title}</Text>
         <Text style={tw`text-white text-lg mt-2`}>{book?.authors?.join(', ')}</Text>
         <Text style={tw`text-white text-lg mt-2`}>{book?.description}</Text>

@@ -36,7 +36,7 @@ const Search = () => {
                 >
                     <View style={tw`flex justify-start items-start gap-4 p-2`}>
                         <Image
-                            source={{ uri: volume?.imageLinks?.thumbnail }}
+                            source={{ uri: volume?.imageLinks?.thumbnail?.replace("http://", "https://") }}
                             style={tw`w-50 h-50 rounded-xl m-auto`}
                             alt="Book Image"
                         />
