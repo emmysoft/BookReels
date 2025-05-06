@@ -104,14 +104,16 @@ const HomeScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const RenderBooks = ({ book }: any) => {
-    const volume = book.volumeInfo;
-    const id = book.id;
+    const volume = book.volumeInfo; //book data
+    const id = book.id; //book id
+
+    // console.log(volume?.imageLinks?.thumbnail?.replace('http://', 'https://'));
     return (
-      <>
+      <> 
         <Pressable onPress={() => router.push({ pathname: '/bookdetails', params: { id: id } })} style={tw`flex-1 p-4 rounded-xl`}>
           <View style={tw`flex justify-start items-start gap-4 p-2`}>
             <Image
-              source={{ uri: volume?.imageLinks?.thumbnail }}
+              source={{ uri: volume?.imageLinks?.thumbnail?.replace('http://', 'https://') }}
               style={tw`w-50 h-50 rounded-xl m-auto`}
               alt="Book Image"
             />

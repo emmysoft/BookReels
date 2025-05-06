@@ -35,11 +35,11 @@ const Library = () => {
   const renderItem = ({ item }: { item: Book }) => (
     <Pressable
       onPress={() => router.push({ pathname: '/bookdetails', params: { id: item.id } })}
-      style={tw`mb-4 bg-[#28203F] p-4 rounded-xl`}
+      style={tw`mb-4 bg-[#28203F] p-4 rounded-xl justify-center items-center`}
     >
       <Image
         source={{ uri: item.imageLinks?.thumbnail }}
-        style={tw`w-24 h-36 rounded-md`}
+        style={tw`w-36 h-36 rounded-md`}
       />
       <Text style={tw`text-white text-lg mt-2`}>{item.title}</Text>
       <Text style={tw`text-gray-400 text-sm`}>
