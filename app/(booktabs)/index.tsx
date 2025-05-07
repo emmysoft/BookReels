@@ -1,10 +1,10 @@
-import { View, Text, FlatList, Image, ActivityIndicator, Pressable, ScrollView } from 'react-native'
+import { View, Text, FlatList, Image, Pressable, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import tw from 'twrnc';
 import { fetchBooks } from '@/services/books';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-
+import { Skeleton } from 'moti/skeleton';
 
 const categories = [
   { label: "Faith", query: "faith books" },
@@ -26,7 +26,6 @@ const categories = [
 ];
 
 const HomeScreen = () => {
-
   const router = useRouter();
 
   //category books
@@ -101,7 +100,7 @@ const HomeScreen = () => {
   }, []);
 
   //loading
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const RenderBooks = ({ book }: any) => {
     const volume = book.volumeInfo; //book data
@@ -109,16 +108,29 @@ const HomeScreen = () => {
 
     // console.log(volume?.imageLinks?.thumbnail?.replace('http://', 'https://'));
     return (
-      <> 
-        <Pressable onPress={() => router.push({ pathname: '/bookdetails', params: { id: id } })} style={tw`flex-1 p-4 rounded-xl`}>
-          <View style={tw`flex justify-start items-start gap-4 p-2`}>
-            <Image
-              source={{ uri: volume?.imageLinks?.thumbnail?.replace('http://', 'https://') }}
-              style={tw`w-50 h-50 rounded-xl m-auto`}
-              alt="Book Image"
-            />
-          </View>
-        </Pressable>
+      <>
+        <Skeleton width={50} height={50} colorMode='light' transition={{ duration: 2 }}>
+          {isLoading
+            ?
+            null
+            :
+            <Pressable onPress={() => router.push({ pathname: '/bookdetails', params: { id: id } })} style={tw`flex-1 p-4 rounded-xl`}>
+              <View style={tw`flex justify-start items-start gap-4 p-2`}>
+                {volume?.imageLinks?.thumbnail ? (
+                  <Image
+                    source={{ uri: volume.imageLinks.thumbnail.replace('http://', 'https://') }}
+                    style={tw`w-50 h-50 rounded-xl m-auto`}
+                    alt="Book Image"
+                  />
+                ) : (
+                  <View style={tw`w-50 h-50 rounded-xl m-auto bg-gray-700 justify-center items-center`}>
+                    <Text style={tw`text-white text-xs`}>No Image</Text>
+                  </View>
+                )}
+              </View>
+            </Pressable>
+          }
+        </Skeleton>
       </>
     )
   }
@@ -131,39 +143,30 @@ const HomeScreen = () => {
           categories.map((category) => (
             <View key={category.label} style={tw`mb-6`}>
               <Text style={tw`text-white text-2xl px-4 mb-2`}>{category.label}</Text>
-              {isLoading ?
-                <ActivityIndicator size="large" color="#fff" style={tw`m-auto`} />
-                :
-                <FlatList
-                  horizontal
-                  data={categoryBooks[category.label]}
-                  renderItem={({ item }) => <RenderBooks book={item} />}
-                  keyExtractor={(item) => item._id || item.title}
-                  showsHorizontalScrollIndicator={false}
-                />
-              }
+              <FlatList
+                horizontal
+                data={categoryBooks[category.label]}
+                renderItem={({ item }) => <RenderBooks book={item} />}
+                keyExtractor={(item) => item.id || item.title}
+                showsHorizontalScrollIndicator={false}
+              />
             </View>
           ))
         ) : (
           <>
-            <Text style={tw`text-white text-2xl px-4 mb-2`}>Search Results</Text>
-            {isLoading ?
-              <ActivityIndicator size="large" color="#fff" style={tw`m-auto`} />
-              :
-              <FlatList
-                data={books}
-                renderItem={({ item }) => <RenderBooks book={item} />}
-                keyExtractor={(item, index) => item._id || index.toString()}
-                numColumns={2}
-                scrollEnabled
-                showsVerticalScrollIndicator={false}
-                ListEmptyComponent={() => (
-                  <View style={tw`m-auto`}>
-                    <Text style={tw`text-white text-left text-xl`}>No books found</Text>
-                  </View>
-                )}
-              />
-            }
+            <FlatList
+              data={books}
+              renderItem={({ item }) => <RenderBooks book={item} />}
+              keyExtractor={(item, index) => item.id || index.toString()}
+              numColumns={2}
+              scrollEnabled
+              showsVerticalScrollIndicator={false}
+              ListEmptyComponent={() => (
+                <View style={tw`m-auto`}>
+                  <Text style={tw`text-white text-left text-xl`}>No books found</Text>
+                </View>
+              )}
+            />
           </>
         )}
       </ScrollView>
