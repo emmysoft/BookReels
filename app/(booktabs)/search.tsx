@@ -1,7 +1,7 @@
 import { View, Text, TextInput, Pressable, FlatList, Image, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router';
-import { fetchBooks } from '@/services/books';
+import { fetchBooks } from '@/services/books.service';
 import tw from 'twrnc';
 import { Ionicons } from '@expo/vector-icons';
 

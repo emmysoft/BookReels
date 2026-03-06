@@ -1,7 +1,7 @@
 import { Text, ScrollView, Image, Pressable } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { fetchBookId } from '@/services/books';
+import { fetchBookId } from '@/services/books.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import tw from 'twrnc';
 import { Ionicons } from '@expo/vector-icons';

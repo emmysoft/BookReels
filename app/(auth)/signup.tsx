@@ -2,15 +2,18 @@ import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-nativ
 import React, { useState } from 'react'
 import tw from 'twrnc';
 import { router } from 'expo-router';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { AUTH } from '@/firebase.config';
+// import { createUserWithEmailAndPassword } from 'firebase/auth';
+// import { AUTH } from '@/firebase.config';
 import Toast from 'react-native-toast-message';
+import authService from '@/services/auth.service';
 
 const SignUp = () => {
 
-  const auth = AUTH;
+  // const auth = AUTH;
 
   const [loading, setLoading] = useState(false);
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,19 +40,19 @@ const SignUp = () => {
       })
     };
     try {
-      const res = await createUserWithEmailAndPassword(auth, email, password);
-      console.log(res);
+      const res = await authService.register({ name, username, email, password });
+      console.log("user details:", JSON.stringify(res?.data, null, 2));
       Toast.show({
         type: 'success',
         text1: 'Registration successful',
       })
-      router.push('/(auth)');
+      router.push('/(booktabs)');
     } catch (error: any) {
-      console.log(error);
+      console.log(error?.response?.data?.message);
       Toast.show({
         type: 'error',
         text1: 'Registration Failed!',
-        text2: 'Try again'
+        text2: error?.response?.data?.message
       })
     } finally {
       setLoading(false);
@@ -62,6 +65,22 @@ const SignUp = () => {
         <View style={tw`flex justify-start items-start w-full gap-12`}>
           <Text style={tw`text-center text-3xl text-[#fff]`}>Register Here</Text>
           <View style={tw`flex justify-center items-center w-full gap-6`}>
+            <TextInput
+              value={name}
+              onChangeText={(text: string) => setName(text)}
+              placeholder='Name'
+              placeholderTextColor={'#fff'}
+              style={tw`p-4 w-full text-[#fff] text-xl rounded-xl border-2 border-[#fff]`}
+            />
+
+            <TextInput
+              value={username}
+              onChangeText={(text: string) => setUsername(text)}
+              placeholder='Username'
+              placeholderTextColor={'#fff'}
+              style={tw`p-4 w-full text-[#fff] text-xl rounded-xl border-2 border-[#fff]`}
+            />
+
             <TextInput
               value={email}
               onChangeText={(text: string) => setEmail(text)}
@@ -93,7 +112,10 @@ const SignUp = () => {
               <ActivityIndicator size="large" color="#fff" />
             </View>
             :
-            <Pressable onPress={() => handleRegister()} style={tw`flex-row justify-center items-center gap-2 bg-[#fff] p-4 rounded-xl w-full`}>
+            <Pressable
+              disabled={!name || !email || !password || !confirmPassword}
+              onPress={() => handleRegister()}
+              style={tw`flex-row justify-center items-center gap-2 bg-[#fff] p-4 rounded-xl w-full`}>
               <Text style={tw`text-[#191327] text-xl`}>Register</Text>
             </Pressable>
           }

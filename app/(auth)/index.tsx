@@ -2,49 +2,54 @@ import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-nativ
 import React, { useEffect, useState } from 'react'
 import tw from 'twrnc';
 import { router } from 'expo-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { AUTH } from '@/firebase.config';
+// import { signInWithEmailAndPassword } from 'firebase/auth';
+// import { AUTH } from '@/firebase.config';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import authService from '@/services/auth.service';
+import { Ionicons } from '@expo/vector-icons';
+import { UserStore } from '@/stores/userStore';
 
 const Login = () => {
 
-    const auth = AUTH;
+    // const auth = AUTH;
+    const { setAuth } = UserStore();
 
     const [loading, setLoading] = useState(false);
-    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [isVisible, setIsVisible] = useState(false);
+
+    const togglePasswordVisibility = () => {
+        setIsVisible(!isVisible);
+    }
 
     //async storage for login credentials
     useEffect(() => {
         const getCredentials = async () => {
-            const email = await AsyncStorage.getItem('email');
-            const password = await AsyncStorage.getItem('password');
-            if (email && password) {
-                setEmail(email);
-                setPassword(password);
+            const username = await AsyncStorage.getItem('username');
+            if (username) {
+                setUsername(username);
             }
         }
         getCredentials();
     }, []);
 
+    //login function
     const handleLogin = async () => {
         setLoading(true);
         try {
-            const res = await signInWithEmailAndPassword(auth, email, password);
-            await AsyncStorage.setItem('email', email);
-            console.log(res);
-            Toast.show({
-                type: 'success',
-                text1: 'Login successful',
-            })
+            const res = await authService.login({ username, password });
+            await AsyncStorage.setItem('username', username);
+            const { token, user } = res?.data;
+            setAuth(user, token);
             router.push('/(booktabs)');
         } catch (error: any) {
-            console.log(error)
+            console.log(error?.response?.data);
             Toast.show({
                 type: 'error',
                 text1: 'Login Failed!',
-                text2: 'Incorrect credentials'
+                text2: error?.response?.data
             })
         } finally {
             setLoading(false);
@@ -58,9 +63,9 @@ const Login = () => {
                     <Text style={tw`text-center text-3xl text-[#fff]`}>Login</Text>
                     <View style={tw`flex justify-center items-center w-full gap-6`}>
                         <TextInput
-                            value={email}
-                            onChangeText={(text: string) => setEmail(text)}
-                            placeholder='Email'
+                            value={username}
+                            onChangeText={(text: string) => setUsername(text)}
+                            placeholder='Username'
                             placeholderTextColor={'#fff'}
                             style={tw`p-4 w-full text-[#fff] text-xl rounded-xl border-2 border-[#fff]`}
                         />
@@ -71,7 +76,14 @@ const Login = () => {
                             placeholder='Password'
                             placeholderTextColor={'#fff'}
                             style={tw`p-4 w-full text-[#fff] text-xl rounded-xl border-2 border-[#fff]`}
-                            secureTextEntry={true}
+                            secureTextEntry={!isVisible}
+                        />
+                        <Ionicons
+                            onPress={togglePasswordVisibility}
+                            name={isVisible ? "eye" : "eye-off"}
+                            size={24}
+                            color="#fff"
+                            style={tw`absolute right-6 top-24`}
                         />
                     </View>
 
@@ -81,8 +93,14 @@ const Login = () => {
                             <ActivityIndicator size="large" color="#fff" />
                         </View>
                         :
-                        <Pressable onPress={() => handleLogin()} style={tw`flex-row justify-center items-center gap-2 bg-[#fff] p-4 rounded-xl w-full`}>
-                            <Text style={tw`text-[#191327] text-xl`}>Login</Text>
+                        <Pressable
+                            disabled={!username || !password}
+                            onPress={() => handleLogin()}
+                            style={tw`flex-row justify-center items-center gap-2 bg-[#fff] p-4 rounded-xl w-full`}
+                        >
+                            <Text style={tw`text-[#191327] text-xl`}>
+                                Login
+                            </Text>
                         </Pressable>
                     }
                     <Pressable onPress={() => router.push('/signup')} style={tw`flex-row justify-center items-center gap-4`}>

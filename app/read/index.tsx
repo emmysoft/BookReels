@@ -3,7 +3,7 @@ import { View, Text, ScrollView } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import tw from 'twrnc';
-import { fetchBookId } from '@/services/books';
+import { fetchBookId } from '@/services/books.service';
 
 type Book = {
   title: string;

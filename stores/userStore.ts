@@ -1,22 +1,32 @@
 //zustand store for user data
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface User {
     id: string;
     name: string;
+    username: string;
     email: string;
-    image: string;
-    role: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
-interface UserStore {
+interface AuthState {
     user: User | null;
-    setUser: (user: User) => void;
-    removeUser: () => void;
+    token: string | null;
+    isAuthenticated: boolean;
+    setAuth: (user: User, token: string) => void;
+    logout: () => void;
 }
 
-export const UserStore = create<UserStore>((set) => ({
-    user: null,
-    setUser: (user) => set({ user }),
-    removeUser: () => set({ user: null }),
-}));
+export const UserStore = create<AuthState>()(
+    persist(
+        (set) => ({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            setAuth: (user, token) => set({ user, token, isAuthenticated: true }),
+            logout: () => set({ user: null, token: null, isAuthenticated: false }),
+        }),
+        { name: 'auth-storage' }
+    ));

@@ -1,12 +1,14 @@
-import { View, Text, FlatList, Image, Pressable, ScrollView } from 'react-native'
+import { View, Text, FlatList, Image, Pressable, ScrollView, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import tw from 'twrnc';
-import { fetchBooks } from '@/services/books';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import { Skeleton } from 'moti/skeleton';
+import booksService from '@/services/books.service';
+import { UserStore } from '@/stores/userStore';
+import { Ionicons } from '@expo/vector-icons';
 
 const categories = [
+  { label: "All", query: "" },
   { label: "Faith", query: "faith books" },
   { label: "Family", query: "family books" },
   { label: "Education", query: "education books" },
@@ -25,153 +27,160 @@ const categories = [
   { label: "Self Help", query: "self help books" },
 ];
 
+const RenderBookCard = ({ book, onPress }: any) => {
+  const thumbnail = book.thumbnail;
+  return (
+    <Pressable onPress={onPress} style={tw`flex justify-start items-start gap-2 p-2`}>
+      {thumbnail ? (
+        <Image
+          source={{ uri: thumbnail.replace('http://', 'https://') }}
+          style={tw`w-40 h-56 rounded-xl`}
+        />
+      ) : (
+        <View style={tw`w-40 h-56 rounded-xl bg-gray-700 justify-center items-center`}>
+          <Text style={tw`text-white text-xs`}>No Image</Text>
+        </View>
+      )}
+      <Text style={tw`text-white text-xs w-40`} numberOfLines={2}>{book.title}</Text>
+    </Pressable>
+  );
+};
+
 const HomeScreen = () => {
+  const { user, logout } = UserStore();
   const router = useRouter();
 
-  //category books
   const [categoryBooks, setCategoryBooks] = useState<{ [key: string]: any[] }>({});
-
-  //state for book data
   const [books, setBooks] = useState<any[]>([]);
-
-  //state for search books and actors
   const [search, setSearch] = useState("");
-
-  //like state
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [likedBooks, setLikedBooks] = useState<any[]>([]);
-  //like counts
-  const [likeCounts, setLikeCounts] = useState<{ [key: string]: number }>({});
+  const [isLoading, setIsLoading] = useState(true);
 
-  //handle category display
+  // Fetch all categories
   useEffect(() => {
     const fetchAllCategories = async () => {
       setIsLoading(true);
-      const newCategoryBooks: { [key: string]: any[] } = {};
+      try {
+        const results = await Promise.all(
+          categories
+            .filter(c => c.label !== "All") // 👈 add here, before .map
+            .map(async (category) => {
+              const response = await booksService.searchBooks(category.query);
+              return { label: category.label, books: response.data };
+            })
+        );
 
-      for (const category of categories) {
-        const books = await fetchBooks(category.query);
-        newCategoryBooks[category.label] = books;
+        const newCategoryBooks: { [key: string]: any[] } = {};
+        results.forEach(({ label, books }) => {
+          newCategoryBooks[label] = books;
+        });
+
+        const allBooks = results.flatMap(r => r.books);
+        newCategoryBooks["All"] = allBooks;
+
+        setCategoryBooks(newCategoryBooks);
+        setSelectedCategory("All");
+        setBooks(allBooks);
+      } catch (error: any) {
+        console.error("Error fetching categories:", error?.response?.data);
+      } finally {
+        setIsLoading(false);
       }
-
-      setCategoryBooks(newCategoryBooks);
-      setIsLoading(false);
     };
-
     fetchAllCategories();
   }, []);
 
-  //toggle like and unlike
-  // const handleToggleLike = async (book: any) => {
-  //   const isAlreadyLiked = likedBooks.some((b: any) => b.title === book?.title);
+  // Fetch search results
+  useEffect(() => {
+    if (search.length === 0) return;
+    const fetchSearchResults = async () => {
+      try {
+        const response = await booksService.searchBooks(search);
+        setBooks(response.data);
+        setSelectedCategory(null);
+      } catch (error: any) {
+        console.error("Error fetching search results:", error?.response?.data);
+      }
+    };
+    fetchSearchResults();
+  }, [search]);
 
-  //   let updatedLikes;
-  //   let updatedLikeCounts = { ...likeCounts };
-
-  //   if (isAlreadyLiked) {
-  //     updatedLikes = likedBooks.filter((b) => b.title !== book?.title);
-  //     updatedLikeCounts[book.title] = (updatedLikeCounts[book.title] || 1) - 1;
-  //   } else {
-  //     updatedLikes = [...likedBooks, book];
-  //     updatedLikeCounts[book.title] = (updatedLikeCounts[book.title] || 0) + 1;
-  //   }
-
-  //   setLikedBooks(updatedLikes);
-  //   setLikeCounts(updatedLikeCounts);
-  //   await AsyncStorage.setItem('likedBooks', JSON.stringify(updatedLikes));
-  //   await AsyncStorage.setItem('likeCounts', JSON.stringify(updatedLikeCounts));
-  // };
-
-
-
-  //function to handle likes count for each book
+  // Load liked books
   useEffect(() => {
     const loadLikedBooks = async () => {
       const saved = await AsyncStorage.getItem('likedBooks');
-      const savedCounts = await AsyncStorage.getItem('likeCounts');
-
-      if (saved) {
-        setLikedBooks(JSON.parse(saved));
-      }
-      if (savedCounts) {
-        setLikeCounts(JSON.parse(savedCounts));
-      }
+      if (saved) setLikedBooks(JSON.parse(saved));
     };
     loadLikedBooks();
   }, []);
 
-  //loading
-  const [isLoading, setIsLoading] = useState(true);
+  const handleCategoryPress = (label: string) => {
+    setSelectedCategory(label);
+    setBooks(categoryBooks[label] || []);
+    setSearch("");
+  };
 
-  const RenderBooks = ({ book }: any) => {
-    const volume = book.volumeInfo; //book data
-    const id = book.id; //book id
-
-    // console.log(volume?.imageLinks?.thumbnail?.replace('http://', 'https://'));
-    return (
-      <>
-        <Skeleton width={50} height={50} colorMode='light' transition={{ duration: 2 }}>
-          {isLoading
-            ?
-            null
-            :
-            <Pressable onPress={() => router.push({ pathname: '/bookdetails', params: { id: id } })} style={tw`flex-1 p-4 rounded-xl`}>
-              <View style={tw`flex justify-start items-start gap-4 p-2`}>
-                {volume?.imageLinks?.thumbnail ? (
-                  <Image
-                    source={{ uri: volume.imageLinks.thumbnail.replace('http://', 'https://') }}
-                    style={tw`w-50 h-50 rounded-xl m-auto`}
-                    alt="Book Image"
-                  />
-                ) : (
-                  <View style={tw`w-50 h-50 rounded-xl m-auto bg-gray-700 justify-center items-center`}>
-                    <Text style={tw`text-white text-xs`}>No Image</Text>
-                  </View>
-                )}
-              </View>
-            </Pressable>
-          }
-        </Skeleton>
-      </>
-    )
-  }
+  const handleLogout = () => {
+    logout();
+    router.push('/(auth)');
+  };
 
   return (
-    <>
-      <ScrollView style={tw`flex-1 bg-[#191327]`}>
-        <Text style={tw`text-white text-4xl py-4 px-3 mt-24 mb-12`}>BookReels 📚</Text>
-        {search.length === 0 ? (
-          categories.map((category) => (
-            <View key={category.label} style={tw`mb-6`}>
-              <Text style={tw`text-white text-2xl px-4 mb-2`}>{category.label}</Text>
-              <FlatList
-                horizontal
-                data={categoryBooks[category.label]}
-                renderItem={({ item }) => <RenderBooks book={item} />}
-                keyExtractor={(item) => item.id || item.title}
-                showsHorizontalScrollIndicator={false}
-              />
-            </View>
-          ))
-        ) : (
-          <>
-            <FlatList
-              data={books}
-              renderItem={({ item }) => <RenderBooks book={item} />}
-              keyExtractor={(item, index) => item.id || index.toString()}
-              numColumns={2}
-              scrollEnabled
-              showsVerticalScrollIndicator={false}
-              ListEmptyComponent={() => (
-                <View style={tw`m-auto`}>
-                  <Text style={tw`text-white text-left text-xl`}>No books found</Text>
-                </View>
-              )}
-            />
-          </>
+    <View style={tw`flex-1 bg-[#191327]`}>
+      {/* Header */}
+      <View style={tw`flex-row justify-between items-center px-4 pt-12 pb-2`}>
+        <View>
+          <Text style={tw`text-white text-3xl font-bold`}>BookReels 📚</Text>
+          <Text style={tw`text-gray-400 text-sm`}>Welcome, {user?.username}!</Text>
+        </View>
+        <TouchableOpacity onPress={handleLogout} style={tw`p-2`}>
+          <Ionicons name="log-out-outline" size={24} color="red" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Category Pills - horizontal scroll on top */}
+      <View style={tw`mt-2`}>
+        <FlatList
+          horizontal
+          data={categories}
+          keyExtractor={(item) => item.label}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={tw`px-4 gap-2`}
+          renderItem={({ item }) => (
+            <Pressable
+              onPress={() => handleCategoryPress(item.label)}
+              style={tw`px-4 py-2 rounded-full mr-2 ${selectedCategory === item.label ? 'bg-purple-600' : 'bg-gray-700'}`}
+            >
+              <Text style={tw`text-white text-sm font-medium`}>{item.label}</Text>
+            </Pressable>
+          )}
+        />
+      </View>
+
+      {/* Books Grid */}
+      <FlatList
+        data={books}
+        keyExtractor={(item) => item._id}
+        numColumns={2}
+        contentContainerStyle={tw`p-4`}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <RenderBookCard
+            book={item}
+            onPress={() => router.push({ pathname: '/bookdetails', params: { id: item._id } })}
+          />
         )}
-      </ScrollView>
-    </>
-  )
-}
+        ListEmptyComponent={() => (
+          <View style={tw`flex-1 justify-center items-center mt-20`}>
+            <Text style={tw`text-gray-400 text-lg`}>
+              {isLoading ? "Loading books..." : "No books found"}
+            </Text>
+          </View>
+        )}
+      />
+    </View>
+  );
+};
 
 export default HomeScreen;
