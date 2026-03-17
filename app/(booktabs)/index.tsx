@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Image, Pressable, ScrollView, TouchableOpacity } from 'react-native'
+import { View, Text, FlatList, Image, Pressable, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import tw from 'twrnc';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,23 +8,23 @@ import { UserStore } from '@/stores/userStore';
 import { Ionicons } from '@expo/vector-icons';
 
 const categories = [
-  { label: "All", query: "" },
-  { label: "Faith", query: "faith books" },
-  { label: "Family", query: "family books" },
-  { label: "Education", query: "education books" },
-  { label: "Parenting", query: "parenting books" },
-  { label: "Fantasy", query: "fantasy books" },
-  { label: "Romance", query: "romance books" },
-  { label: "Science", query: "science books" },
-  { label: "History", query: "history books" },
-  { label: "Adventure", query: "adventure books" },
-  { label: "Horror", query: "horror books" },
-  { label: "Mystery", query: "mystery books" },
-  { label: "Thriller", query: "thriller books" },
-  { label: "Drama", query: "drama books" },
-  { label: "Comedy", query: "comedy books" },
-  { label: "Biography", query: "biography books" },
-  { label: "Self Help", query: "self help books" },
+  { label: "All", topic: "" },
+  { label: "Faith", topic: "religion" },
+  { label: "Family", topic: "family" },
+  { label: "Education", topic: "education" },
+  { label: "Parenting", topic: "children" },
+  { label: "Fantasy", topic: "fantasy" },
+  { label: "Romance", topic: "romance" },
+  { label: "Science", topic: "science" },
+  { label: "History", topic: "history" },
+  { label: "Adventure", topic: "adventure" },
+  { label: "Horror", topic: "horror" },
+  { label: "Mystery", topic: "mystery" },
+  { label: "Thriller", topic: "thriller" },
+  { label: "Drama", topic: "drama" },
+  { label: "Comedy", topic: "comedy" },
+  { label: "Biography", topic: "biography" },
+  { label: "Self Help", topic: "self-help" },
 ];
 
 const RenderBookCard = ({ book, onPress }: any) => {
@@ -53,30 +53,29 @@ const HomeScreen = () => {
   const [categoryBooks, setCategoryBooks] = useState<{ [key: string]: any[] }>({});
   const [books, setBooks] = useState<any[]>([]);
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [likedBooks, setLikedBooks] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch all categories
+  // Fetch all categories sequentially to avoid rate limiting
   useEffect(() => {
     const fetchAllCategories = async () => {
       setIsLoading(true);
       try {
-        const results = await Promise.all(
-          categories
-            .filter(c => c.label !== "All") // 👈 add here, before .map
-            .map(async (category) => {
-              const response = await booksService.searchBooks(category.query);
-              return { label: category.label, books: response.data };
-            })
-        );
-
         const newCategoryBooks: { [key: string]: any[] } = {};
-        results.forEach(({ label, books }) => {
-          newCategoryBooks[label] = books;
-        });
 
-        const allBooks = results.flatMap(r => r.books);
+        for (const category of categories.filter(c => c.label !== "All")) {
+          try {
+            const response = await booksService.getBooksByTopic(category.topic);
+            newCategoryBooks[category.label] = response.data || [];
+            console.log(`${category.label}: ${response.data?.length} books`);
+          } catch (err) {
+            console.warn(`Failed to fetch ${category.label}`, err);
+            newCategoryBooks[category.label] = []; // don't block other categories
+          }
+          await new Promise(resolve => setTimeout(resolve, 300)); // avoid rate limiting
+        }
+
+        const allBooks = Object.values(newCategoryBooks).flat();
         newCategoryBooks["All"] = allBooks;
 
         setCategoryBooks(newCategoryBooks);
@@ -91,14 +90,14 @@ const HomeScreen = () => {
     fetchAllCategories();
   }, []);
 
-  // Fetch search results
+  // Search
   useEffect(() => {
-    if (search.length === 0) return;
+    if (!search || search.trim().length === 0) return;
     const fetchSearchResults = async () => {
       try {
         const response = await booksService.searchBooks(search);
-        setBooks(response.data);
-        setSelectedCategory(null);
+        setBooks(response.data || []);
+        setSelectedCategory("");
       } catch (error: any) {
         console.error("Error fetching search results:", error?.response?.data);
       }
@@ -110,7 +109,7 @@ const HomeScreen = () => {
   useEffect(() => {
     const loadLikedBooks = async () => {
       const saved = await AsyncStorage.getItem('likedBooks');
-      if (saved) setLikedBooks(JSON.parse(saved));
+      // reserved for future use
     };
     loadLikedBooks();
   }, []);
@@ -139,7 +138,7 @@ const HomeScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Category Pills - horizontal scroll on top */}
+      {/* Category Pills */}
       <View style={tw`mt-2`}>
         <FlatList
           horizontal
@@ -161,7 +160,7 @@ const HomeScreen = () => {
       {/* Books Grid */}
       <FlatList
         data={books}
-        keyExtractor={(item) => item._id}
+        keyExtractor={(item) => item._id?.toString() || item.gutenbergId?.toString()}
         numColumns={2}
         contentContainerStyle={tw`p-4`}
         showsVerticalScrollIndicator={false}

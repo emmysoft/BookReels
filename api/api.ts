@@ -1,15 +1,6 @@
 //set api call for url based on axios
 import axios from 'axios';
-import { BACKEND_BASE_URL, GOOGLE_BASE_URL } from './key';
-import { router } from 'expo-router/build/exports';
-import { UserStore } from '@/stores/userStore';
-
-export const apiClient = axios.create({
-    baseURL: GOOGLE_BASE_URL,
-    headers: {
-        "Content-Type": "application/json",
-    },
-})
+import { BACKEND_BASE_URL } from './key';
 
 export const axiosClient = axios.create({
     baseURL: BACKEND_BASE_URL,
