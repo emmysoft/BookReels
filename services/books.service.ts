@@ -2,6 +2,10 @@ import axiosClient from "@/api/api";
 
 // books.service.ts
 class BookService {
+    getBooks = async () => {
+        return await axiosClient.get("/books/books");
+    };
+
     searchBooks = async (query: string) => {
         return await axiosClient.get(`/books/search`, { params: { query } });
     };

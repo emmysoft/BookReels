@@ -9,9 +9,9 @@ import { Ionicons } from '@expo/vector-icons';
 
 const categories = [
   { label: "All", topic: "" },
-  { label: "Faith", topic: "religion" },
-  { label: "Family", topic: "family" },
-  { label: "Education", topic: "education" },
+  { label: "Religion", topic: "religion" },
+  { label: "Family", topic: "domestic" },       // matches "Domestic fiction" in subjects
+  { label: "Education", topic: "philosophy" },     // matches "Philosophy & Ethics" bookshelf
   { label: "Parenting", topic: "children" },
   { label: "Fantasy", topic: "fantasy" },
   { label: "Romance", topic: "romance" },
@@ -22,9 +22,9 @@ const categories = [
   { label: "Mystery", topic: "mystery" },
   { label: "Thriller", topic: "thriller" },
   { label: "Drama", topic: "drama" },
-  { label: "Comedy", topic: "comedy" },
-  { label: "Biography", topic: "biography" },
-  { label: "Self Help", topic: "self-help" },
+  { label: "Comedy", topic: "humour" },         // Gutenberg uses "Humour" not "comedy"
+  { label: "Biography", topic: "biograph" },       // catches both "Biography" and "Biographies"
+  { label: "Self Help", topic: "self" },           // broadens match to catch any self-* shelf
 ];
 
 const RenderBookCard = ({ book, onPress }: any) => {
@@ -50,60 +50,28 @@ const HomeScreen = () => {
   const { user, logout } = UserStore();
   const router = useRouter();
 
-  const [categoryBooks, setCategoryBooks] = useState<{ [key: string]: any[] }>({});
+  const [allBooks, setAllBooks] = useState<any[]>([]);
   const [books, setBooks] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch all categories sequentially to avoid rate limiting
   useEffect(() => {
-    const fetchAllCategories = async () => {
+    const getAllBooks = async () => {
       setIsLoading(true);
       try {
-        const newCategoryBooks: { [key: string]: any[] } = {};
-
-        for (const category of categories.filter(c => c.label !== "All")) {
-          try {
-            const response = await booksService.getBooksByTopic(category.topic);
-            newCategoryBooks[category.label] = response.data || [];
-            console.log(`${category.label}: ${response.data?.length} books`);
-          } catch (err) {
-            console.warn(`Failed to fetch ${category.label}`, err);
-            newCategoryBooks[category.label] = []; // don't block other categories
-          }
-          await new Promise(resolve => setTimeout(resolve, 300)); // avoid rate limiting
-        }
-
-        const allBooks = Object.values(newCategoryBooks).flat();
-        newCategoryBooks["All"] = allBooks;
-
-        setCategoryBooks(newCategoryBooks);
-        setSelectedCategory("All");
-        setBooks(allBooks);
+        const response = await booksService.getBooks();
+        const fetched = response.data || [];
+        console.log("Fetched books:", JSON.stringify(fetched, null, 2));
+        setAllBooks(fetched);
+        setBooks(fetched);
       } catch (error: any) {
-        console.error("Error fetching categories:", error?.response?.data);
+        console.error("Error fetching books:", error?.response?.data);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchAllCategories();
+    getAllBooks();
   }, []);
-
-  // Search
-  useEffect(() => {
-    if (!search || search.trim().length === 0) return;
-    const fetchSearchResults = async () => {
-      try {
-        const response = await booksService.searchBooks(search);
-        setBooks(response.data || []);
-        setSelectedCategory("");
-      } catch (error: any) {
-        console.error("Error fetching search results:", error?.response?.data);
-      }
-    };
-    fetchSearchResults();
-  }, [search]);
 
   // Load liked books
   useEffect(() => {
@@ -114,10 +82,24 @@ const HomeScreen = () => {
     loadLikedBooks();
   }, []);
 
-  const handleCategoryPress = (label: string) => {
+  const handleCategoryPress = (label: string, topic: string) => {
     setSelectedCategory(label);
-    setBooks(categoryBooks[label] || []);
-    setSearch("");
+
+    if (!topic) {
+      // "All" — show everything
+      setBooks(allBooks);
+      return;
+    }
+
+    // Filter master list by checking if any of the book's categories/topics match
+    const filtered = allBooks.filter((book) => {
+      const bookCategories: string[] = book.categories ?? book.topics ?? book.genres ?? [];
+      return bookCategories.some((c: string) =>
+        c.toLowerCase().includes(topic.toLowerCase())
+      );
+    });
+
+    setBooks(filtered);
   };
 
   const handleLogout = () => {
@@ -148,7 +130,7 @@ const HomeScreen = () => {
           contentContainerStyle={tw`px-4 gap-2`}
           renderItem={({ item }) => (
             <Pressable
-              onPress={() => handleCategoryPress(item.label)}
+              onPress={() => handleCategoryPress(item.label, item.topic)}
               style={tw`px-4 py-2 rounded-full mr-2 ${selectedCategory === item.label ? 'bg-purple-600' : 'bg-gray-700'}`}
             >
               <Text style={tw`text-white text-sm font-medium`}>{item.label}</Text>
@@ -160,14 +142,17 @@ const HomeScreen = () => {
       {/* Books Grid */}
       <FlatList
         data={books}
-        keyExtractor={(item) => item._id?.toString() || item.gutenbergId?.toString()}
+        keyExtractor={(item) => item._id}
         numColumns={2}
         contentContainerStyle={tw`p-4`}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <RenderBookCard
             book={item}
-            onPress={() => router.push({ pathname: '/bookdetails', params: { id: item._id } })}
+            onPress={() => router.push({
+              pathname: '/bookdetails',
+              params: { id: item._id }
+            })}
           />
         )}
         ListEmptyComponent={() => (

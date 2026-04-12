@@ -17,6 +17,7 @@ type Book = {
 const STORAGE_KEY = 'bookmarkedBooks';
 
 const Library = () => {
+
   const [bookmarkedBooks, setBookmarkedBooks] = useState<Book[]>([]);
   const router = useRouter();
 
@@ -57,15 +58,17 @@ const Library = () => {
   }
 
   return (
-    <View style={tw`flex-1 bg-[#191327] h-full`}>
-      <View style={tw`flex justify-start items-start gap-4 py-12 px-5`}>
-        <FlatList
-          data={bookmarkedBooks}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-        />
+    <>
+      <View style={tw`flex-1 bg-[#191327] h-full`}>
+        <View style={tw`flex justify-start items-start gap-4 py-12 px-5`}>
+          <FlatList
+            data={bookmarkedBooks}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+          />
+        </View>
       </View>
-    </View>
+    </>
   );
 };
 

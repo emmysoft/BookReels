@@ -67,7 +67,7 @@ const Login = () => {
                             onChangeText={(text: string) => setUsername(text)}
                             placeholder='Username'
                             placeholderTextColor={'#fff'}
-                            style={tw`p-4 w-full text-[#fff] text-xl rounded-xl border-2 border-[#fff]`}
+                            style={tw`p-4 min-w-full text-[#fff] text-xl rounded-xl border-2 border-[#fff]`}
                         />
 
                         <TextInput
@@ -75,7 +75,7 @@ const Login = () => {
                             onChangeText={(text: string) => setPassword(text)}
                             placeholder='Password'
                             placeholderTextColor={'#fff'}
-                            style={tw`p-4 w-full text-[#fff] text-xl rounded-xl border-2 border-[#fff]`}
+                            style={tw`p-4 min-w-full text-[#fff] text-xl rounded-xl border-2 border-[#fff]`}
                             secureTextEntry={!isVisible}
                         />
                         <Ionicons
